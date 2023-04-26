@@ -1,4 +1,11 @@
-image: python:3.9-alpine
+image: docker:20-git
+services:
+  - docker:20-dind
+
+
+variables:
+  COMPOSE_FILE: ./Grafana_Prometheus/docker-compose.yml
+  DOCKER_TLS_CERTS: "/certs"
 
 stages:
   - build
@@ -12,7 +19,6 @@ build_app:
     DOCKER_TAG: 1.0.0
     
   script:
-    - hostnamectl
     - cd python_app
     - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $DOCKER_IMAGE:DOCKER_TAG .
