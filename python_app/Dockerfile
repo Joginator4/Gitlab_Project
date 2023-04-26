@@ -1,6 +1,6 @@
 FROM ubuntu:20.04 as builder
 WORKDIR /usr/src/app
-COPY ./python_app/requirements.txt /usr/src/app
+COPY requirements.txt /usr/src/app
 RUN apt update && apt install --no-install-recommends -y \
     curl \
     python3 \
