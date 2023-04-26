@@ -7,5 +7,19 @@ stages:
 
 build_app:
   stage: build
+  variables:
+    DOCKER_IMAGE: ubuntu
+    DOCKER_TAG: 1.0.0
+    
   script:
-    - ls
+    - cd python_app
+    - sudo docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
+    - sudo docker build -t $DOCKER_IMAGE:DOCKER_TAG .
+
+# test_app:
+#   stage: test
+#   before_script:
+#     - echo "Testing created docker image"
+#   script:
+#     - sudo docker history $DOCKER_IMAGE:DOCKER_TAG
+#     - docker scan $DOCKER_IMAGE:DOCKER_TAG
