@@ -1,27 +1,42 @@
 image: docker:20-git
 services:
   - docker:20-dind
-
-
 variables:
-  COMPOSE_FILE: ./Grafana_Prometheus/docker-compose.yml
-  DOCKER_TLS_CERTS: "/certs"
+  DOCKER_IMAGE: ubuntu
+  DOCKER_TAG: 1.0.0
 
 stages:
-  - build
   - test
+  - build
   - deploy
+
+test_env:
+  stage: test
+  before_script:
+    - echo "Preparing to run tests"
+  script:
+    - echo "TESTING..."
 
 build_app:
   stage: build
-  variables:
-    DOCKER_IMAGE: ubuntu
-    DOCKER_TAG: 1.0.0
-    
   script:
     - cd python_app
     - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
-    - docker build -t $DOCKER_IMAGE:DOCKER_TAG .
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+
+scan_image:
+  stage: build
+  needs:
+    - build_app
+  before_script:
+    - echo "Installing dependencies to scan image"
+    - apt-get update -y && apt-get install -y docker-scan-plugin
+  script:
+    - echo "Scanning and checking created docker image $DOCKER_IMAGE:$DOCKER_TAG"
+    - docker inspect $DOCKER_IMAGE:$DOCKER_TAG
+    - docker history $DOCKER_IMAGE:$DOCKER_TAG
+    - docker scan $DOCKER_IMAGE:$DOCKER_TAG
+
 
 # test_app:
 #   stage: test
