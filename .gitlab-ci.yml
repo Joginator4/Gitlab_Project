@@ -11,6 +11,8 @@ stages:
   - deploy
 
 test_env:
+  except:
+    - main
   stage: test
   variables:
     RUN_TEST_SCRIPT: test.sh
@@ -22,12 +24,16 @@ test_env:
 
 build_app:
   stage: build
+  only:
+    - main
   script:
     - cd python_app
     - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
 
 scan_image:
+  only:
+    - main
   stage: build
   needs:
     - build_app
