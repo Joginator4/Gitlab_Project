@@ -22,6 +22,8 @@ test_env:
     RUN_TEST_SCRIPT: test.sh
   before_script:
     - echo "Preparing to run tests"
+    - echo "Adding $REQUIREMENTS!"
+    - cat $REQUIREMENTS
     - echo "Test started in New branch!"
   script:
     - chmod +x $RUN_TEST_SCRIPT
