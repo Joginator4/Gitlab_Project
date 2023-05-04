@@ -10,9 +10,5 @@ RUN apt update && apt install --no-install-recommends -y \
     && pip install --upgrade pip \
        pip install -r ./requirements.txt
 COPY . /usr/src/app/
-CMD [ "python3 app.py" ]
-# FROM alpine as runner
-# WORKDIR /usr/src/app
-# COPY --from=builder /usr/src/app /usr/src/app/
-# COPY --from=builder /usr/bin/ /usr/bin/
+ENTRYPOINT [ "python3", "app.py" ]
        
