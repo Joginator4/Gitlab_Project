@@ -38,10 +38,8 @@ build_app:
   only:
     - main
   tags:
-    - aws
-    - remote
+    - local
     - shell
-    - ubuntu
   script:
     - cd python_app
     - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
