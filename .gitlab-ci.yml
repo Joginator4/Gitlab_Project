@@ -4,7 +4,7 @@ workflow:
       when: never
     - when: always
 
-image: docker:20-git
+image: alpine:3.17.3
 variables:
   # INSTALL_DOCKER: apk add docker; sudo systemctl start docker
   DOCKER_IMAGE: python
@@ -19,6 +19,9 @@ stages:
 
 test_env:
   stage: test
+  tags:
+    - local
+    - shell
   variables:
     RUN_TEST_SCRIPT: test.sh
   before_script:
@@ -34,6 +37,11 @@ build_app:
   stage: build
   only:
     - main
+  tags:
+    - aws
+    - remote
+    - shell
+    - ubuntu
   script:
     - cd python_app
     - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
@@ -44,6 +52,11 @@ deploy_app:
   only:
     - main
   stage: deploy
+  tags:
+    - aws
+    - remote
+    - shell
+    - ubuntu
   needs:
     - build_app
   before_script:
