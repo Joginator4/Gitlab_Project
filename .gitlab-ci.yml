@@ -28,8 +28,6 @@ unit_test_run:
   before_script:
     - echo "Preparing to run tests"
     - cd python_app
-    - pip install --upgrade pip
-    - pip install unittest
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
   artifacts:
