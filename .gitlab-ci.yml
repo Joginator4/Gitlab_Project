@@ -33,7 +33,7 @@ unit_test_run:
   artifacts:
     when: always
     reports:
-      junit: python_app/$UNIT_TEST_RESULT
+      junit: python_app/test-reports/$UNIT_TEST_RESULT
 
 
 build_app:
@@ -43,9 +43,14 @@ build_app:
   tags:
     - local
     - shell
+  variables:
+    REPO: registry.gitlab.com/kacperblaz/kubernetes_training .
+  before_script:
+    - cd python_app
+    - sudo docker login registry.gitlab.com
   script:
     - cd python_app
-    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
+#    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $REPO/$DOCKER_IMAGE:$DOCKER_TAG .
     - docker push $REPO/$DOCKER_IMAGE:$DOCKER_TAG
 

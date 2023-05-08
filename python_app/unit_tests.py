@@ -1,6 +1,6 @@
 import os
 import unittest
-
+import xmlrunner
 class TestCurrentFolder(unittest.TestCase):
     
     def test_files_in_current_folder(self):
@@ -11,5 +11,5 @@ class TestCurrentFolder(unittest.TestCase):
 
 if __name__ == '__main__':
     print("Running tests...", "\n")
-    
+       
     unittest.main()
