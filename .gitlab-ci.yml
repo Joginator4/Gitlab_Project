@@ -33,7 +33,7 @@ unit_test_run:
   artifacts:
     when: always
     reports:
-      junit: python_app/test-reports/$UNIT_TEST_RESULT
+      junit: python_app/$UNIT_TEST_RESULT
 
 
 build_app:

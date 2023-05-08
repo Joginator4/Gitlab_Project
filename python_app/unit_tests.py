@@ -1,6 +1,5 @@
 import os
 import unittest
-import xmlrunner
 class TestCurrentFolder(unittest.TestCase):
     
     def test_files_in_current_folder(self):
