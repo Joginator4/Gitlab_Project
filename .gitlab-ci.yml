@@ -51,7 +51,7 @@ build_app:
   script:
 #    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $REPO:$IMAGE_TAG .
-    - docker push $REPO:IMAGE_TAG
+    - docker push $REPO:$IMAGE_TAG
 
 deploy_app:
   only:
