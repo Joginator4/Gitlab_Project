@@ -5,9 +5,9 @@ workflow:
     - when: always
 
 variables:
-  DOCKER_IMAGE: python
-  DOCKER_TAG: app-3.0
-  REPO: 867452
+  #IMAGE_NAME: python
+  IMAGE_TAG: app-3.0
+  REPO: $CI_REGISTRY_IMAGE/python
 
 
 stages:
@@ -43,16 +43,16 @@ build_app:
   tags:
     - local
     - shell
-  variables:
-    REPO: registry.gitlab.com/kacperblaz/kubernetes_training .
+ # variables:
+    #REPO: registry.gitlab.com/kacperblaz/kubernetes_training .
   before_script:
     - cd python_app
-    - sudo docker login registry.gitlab.com
+    - sudo docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - cd python_app
 #    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
-    - docker build -t $REPO/$DOCKER_IMAGE:$DOCKER_TAG .
-    - docker push $REPO/$DOCKER_IMAGE:$DOCKER_TAG
+    - docker build -t $REPO:$IMAGE_TAG .
+    - docker push $REPO:IMAGE_TAG
 
 deploy_app:
   only:
