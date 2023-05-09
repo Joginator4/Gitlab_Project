@@ -49,7 +49,6 @@ build_app:
     - cd python_app
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - cd python_app
 #    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $REPO:$IMAGE_TAG .
     - docker push $REPO:IMAGE_TAG
