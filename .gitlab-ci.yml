@@ -68,9 +68,13 @@ deploy_app:
     - echo "Logging to dev-server on aws and deploying python app from CR"
     - chmod 700 $SSH_DEV_KEY
   script:
+    - scp -o StrictHostKeyChecking=no -i $SSH_DEV_KEY docker-compose.yml ubuntu@$IP_ADDRESS:/home/ubuntu/
     - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
-        docker run -d -it $REPO:$IMAGE_TAG &&
+        export DC_IMAGE_NAME=$REPO
+        export DC_IMAGE_TAG=$IMAGE_TAG
+        docker-compose down &&
+        docker-compose up -d &&
         docker ps"
   environment:
     name: google_platform

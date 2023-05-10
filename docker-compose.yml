@@ -1,0 +1,6 @@
+version: "3.7"
+
+services:
+
+  python_app:
+    image: ${DC_IMAGE_NAME}:${DC_IMAGE_TAG}
