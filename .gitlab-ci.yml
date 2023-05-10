@@ -8,7 +8,7 @@ variables:
   #IMAGE_NAME: python
   IMAGE_TAG: app-3.0
   REPO: $CI_REGISTRY_IMAGE/python
-
+  DEV_URL: google.com
 
 stages:
   - test
@@ -72,3 +72,6 @@ deploy_app:
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
         docker run -d -it $REPO:$IMAGE_TAG &&
         docker ps"
+  environment:
+    name: google_platform
+    url: $DEV_URL
