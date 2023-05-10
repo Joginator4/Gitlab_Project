@@ -66,6 +66,7 @@ deploy_app:
     - build_app
   before_script:
     - echo "Logging to dev-server on aws and deploying python app from CR"
+    - chmod 700 $SSH_DEV_KEY
   script:
     - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
