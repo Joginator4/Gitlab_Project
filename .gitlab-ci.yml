@@ -65,10 +65,10 @@ deploy_app:
   needs:
     - build_app
   before_script:
-    - echo "Deploying pushed $REPO:$IMAGE_TAG from CR"
-    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD $CI_REGISTRY
+    - echo "Logging to dev-server on aws and deploying python app from CR"
   script:
-    - docker pull $REPO:$IMAGE_TAG
+    - ssh -o StrictHostKeyChecking=no -i ./$SSH_DEV_KEY ubuntu@$IP_ADDRESS
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker images
     - docker run -d -it $REPO:$IMAGE_TAG
     - docker ps
