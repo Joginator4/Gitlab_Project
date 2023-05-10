@@ -67,8 +67,7 @@ deploy_app:
   before_script:
     - echo "Logging to dev-server on aws and deploying python app from CR"
   script:
-    - ssh -o StrictHostKeyChecking=no -i ./$SSH_DEV_KEY ubuntu@$IP_ADDRESS
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker images
-    - docker run -d -it $REPO:$IMAGE_TAG
-    - docker ps
+    - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
+        docker run -d -it $REPO:$IMAGE_TAG &&
+        docker ps"
