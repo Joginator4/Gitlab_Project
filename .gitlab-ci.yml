@@ -6,8 +6,8 @@ workflow:
 
 variables:
   #IMAGE_NAME: python
-  IMAGE_TAG: app-3.0
-  REPO: $CI_REGISTRY_IMAGE/python
+  IMAGE_NAME: $CI_REGISTRY_IMAGE/python
+  VERSION: .$CI_PIPELINE_IID
   DEV_URL: google.com
 
 stages:
@@ -46,12 +46,32 @@ build_app:
  # variables:
     #REPO: registry.gitlab.com/kacperblaz/kubernetes_training .
   before_script:
+    - export PACKAGE_VERSION=$(cat version.json | jq -r .version)
+    - export VERSION=$PACKAGE_VERSION.$CI_PIPELINE_IID
+    - echo $VERSION >> version.txt
     - cd python_app
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
 #    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
-    - docker build -t $REPO:$IMAGE_TAG .
-    - docker push $REPO:$IMAGE_TAG
+    - docker build -t $IMAGE_NAME:$VERSION .
+    - docker push $IMAGE_NAME:$VERSION
+  artifacts:
+    paths:
+      - version.txt
+
+versioning_builded_image:
+  stage: build
+  only:
+    - main
+  tags:
+    - local
+    - shell
+  needs:
+    - build_app
+  before_script:
+    - echo version.txt
+  script:
+    - echo "I have version.txt file inside this stage"
 
 deploy_app:
   only:
@@ -67,13 +87,14 @@ deploy_app:
   before_script:
     - echo "Logging to dev-server on aws and deploying python app from CR"
     - chmod 700 $SSH_DEV_KEY
+    - export VERSION=$(cat version-file.txt)
   script:
     - scp -o StrictHostKeyChecking=no -i $SSH_DEV_KEY docker-compose.yml ubuntu@$IP_ADDRESS:/home/ubuntu/
     - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
         ls &&
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
-        export DC_IMAGE_NAME=$REPO &&
-        export DC_IMAGE_TAG=$IMAGE_TAG &&
+        export DC_IMAGE_NAME=$IMAGE_NAME &&
+        export DC_IMAGE_TAG=$VERSION &&
         docker-compose down &&
         docker-compose up -d &&
         docker ps"
