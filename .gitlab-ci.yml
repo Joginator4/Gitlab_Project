@@ -13,6 +13,7 @@ variables:
 stages:
   - test
   - build
+  - test_dependency
   - deploy
 
 unit_test_run:
@@ -48,7 +49,8 @@ build_app:
   before_script:
     - export PACKAGE_VERSION=$(cat version.json | jq -r .version)
     - export VERSION=$PACKAGE_VERSION.$CI_PIPELINE_IID
-    - echo $VERSION > version.txt
+    - echo "VERSION=$VERSION" >> build.env
+    - echo "MY_ENV=value" >> build.env
     - cd python_app
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
@@ -56,8 +58,8 @@ build_app:
     - docker build -t $IMAGE_NAME:$VERSION .
     - docker push $IMAGE_NAME:$VERSION
   artifacts:
-    paths:
-      - version.txt
+    reports:
+      dotenv: build.env
 
 versioning_builded_image:
   stage: build
@@ -70,10 +72,21 @@ versioning_builded_image:
     - build_app
   before_script:
     - ls
-    - export VERSION=$(cat version.txt)
-    - cat version.txt
+    - env
   script:
     - echo "I have version.txt file inside this stage"
+
+check_dependency:
+  only:
+    - main
+  stage: test_dependency
+  tags:
+    - local
+    - shell
+  dependencies: []
+  before_script:
+    - ls
+    - env
 
 deploy_app:
   only:
@@ -88,7 +101,7 @@ deploy_app:
     - echo "Logging to dev-server on aws and deploying python app from CR"
     - ls
     - chmod 700 $SSH_DEV_KEY
-    - export VERSION=$(cat version.txt)
+    - env
   script:
     - scp -o StrictHostKeyChecking=no -i $SSH_DEV_KEY docker-compose.yml ubuntu@$IP_ADDRESS:/home/ubuntu/
     - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
