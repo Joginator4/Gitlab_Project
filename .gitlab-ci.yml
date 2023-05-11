@@ -35,6 +35,7 @@ creating_cache:
     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
   script:
     - echo "12345"
+
 test_cache:
   stage: cache_build
   needs:
