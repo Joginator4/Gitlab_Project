@@ -87,6 +87,8 @@ check_dependency:
   before_script:
     - ls
     - env
+  script:
+    - echo "I have no env variables bcs of dependencies"
 
 deploy_app:
   only:
