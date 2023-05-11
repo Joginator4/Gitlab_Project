@@ -48,7 +48,7 @@ build_app:
   before_script:
     - export PACKAGE_VERSION=$(cat version.json | jq -r .version)
     - export VERSION=$PACKAGE_VERSION.$CI_PIPELINE_IID
-    - echo $VERSION >> version.txt
+    - echo $VERSION > version.txt
     - cd python_app
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
@@ -66,10 +66,11 @@ versioning_builded_image:
   tags:
     - local
     - shell
-  dependencies:
+  needs:
     - build_app
   before_script:
     - ls
+    - export VERSION=$(cat version.txt)
     - cat version.txt
   script:
     - echo "I have version.txt file inside this stage"
@@ -79,10 +80,8 @@ deploy_app:
     - main
   stage: deploy
   tags:
-    - aws
-    - remote
+    - local
     - shell
-    - ubuntu
   needs:
     - build_app
   before_script:
