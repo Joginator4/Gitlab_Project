@@ -86,8 +86,9 @@ deploy_app:
     - build_app
   before_script:
     - echo "Logging to dev-server on aws and deploying python app from CR"
+    - ls
     - chmod 700 $SSH_DEV_KEY
-    - export VERSION=$(cat version-file.txt)
+    - export VERSION=$(cat version.txt)
   script:
     - scp -o StrictHostKeyChecking=no -i $SSH_DEV_KEY docker-compose.yml ubuntu@$IP_ADDRESS:/home/ubuntu/
     - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
