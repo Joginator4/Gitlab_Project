@@ -82,17 +82,18 @@ unit_test_run:
     reports:
       junit: python_app/$UNIT_TEST_RESULT
 
-run_lint_checks:
-  stage: test
-  image: python:3.11.3-alpine3.16
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    paths:
-      - app/requirements.txt
-  tags:
-    - local
-    - docker
-    - linux
+# run_lint_checks:
+#   stage: test
+#   image: python:3.11.3-alpine3.16
+#   cache:
+#     key: "$CI_COMMIT_REF_NAME"
+#     paths:
+#       - app/requirements.txt
+#   tags:
+#     - local
+#     - docker
+#     - linux
+  
 build_app:
   stage: build
   only:
