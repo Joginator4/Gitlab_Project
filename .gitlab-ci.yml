@@ -33,7 +33,8 @@ creating_cache:
     - mkdir -p $PIP_CACHE_DIR
     - pip install -U pip
     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
-
+  script:
+    - echo "12345"
 test_cache:
   stage: cache_build
   needs:
@@ -48,6 +49,7 @@ test_cache:
     policy: pull
   before_script:
     - cd python_app
+  script:
     - pip install requests
 
 unit_test_run:
