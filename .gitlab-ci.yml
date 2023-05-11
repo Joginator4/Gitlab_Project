@@ -9,7 +9,7 @@ variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/python
   VERSION: .$CI_PIPELINE_IID
   DEV_URL: google.com
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/python_app/.cache/pip"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/python_app/.cache"
 
 stages:
   - cache_build
@@ -30,7 +30,6 @@ creating_cache:
     policy: push
   before_script:
     - cd python_app
-    - mkdir -p $PIP_CACHE_DIR
     - pip install -U pip
     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
   script:
@@ -51,7 +50,7 @@ test_cache:
   before_script:
     - cd python_app
   script:
-    - pip install requests
+    - pip install flask
 
 unit_test_run:
   stage: test
@@ -72,11 +71,10 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - mkdir -p $PIP_CACHE_DIR
-    - pip install -U pip
-    - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
+    - pip install requests
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
+    - pip install flask
   artifacts:
     when: always
     reports:
