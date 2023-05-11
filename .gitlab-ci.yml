@@ -66,10 +66,11 @@ versioning_builded_image:
   tags:
     - local
     - shell
-  needs:
+  dependencies:
     - build_app
   before_script:
-    - echo version.txt
+    - ls
+    - cat version.txt
   script:
     - echo "I have version.txt file inside this stage"
 
