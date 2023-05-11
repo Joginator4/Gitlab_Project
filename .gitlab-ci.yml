@@ -50,7 +50,7 @@ test_cache:
   before_script:
     - cd python_app
   script:
-    - pip install flask
+    - ls -la $PIP_CACHE_DIR
 
 unit_test_run:
   stage: test
@@ -71,10 +71,9 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - pip install requests
+    - ls -la $PIP_CACHE_DIR
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
-    - pip install flask
   artifacts:
     when: always
     reports:
