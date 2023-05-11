@@ -47,8 +47,6 @@ test_cache:
     paths: 
       - $PIP_CACHE_DIR
     policy: pull
-  before_script:
-    - cd python_app
   script:
     - ls -la $PIP_CACHE_DIR
 
@@ -71,8 +69,7 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - pwd
-    - ls -la ./.cache
+    - pip install -r requirements.txt
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
   artifacts:
