@@ -11,7 +11,7 @@ variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/python
   VERSION: .$CI_PIPELINE_IID
   DEV_URL: google.com
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/python_app/.cache"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
   - cache_build
@@ -61,7 +61,7 @@ unit_test_run:
   cache:
     key: "$CI_COMMIT_REF_NAME"
     paths:
-      - python_app/.cache
+      - .cache/pip
   tags:
     - local
     - docker
@@ -71,8 +71,7 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - pip install -U pip
-    - pip --cache-dir=python_app/.cache install -r requirements.txt
+    - pip -r requirements.txt
     # - pip install -r requirements.txt
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
@@ -88,7 +87,8 @@ check_caching:
   cache:
     key: "$CI_COMMIT_REF_NAME"
     paths:
-      - python_app/.cache
+      - .cache/pip
+    policy: pull
   tags:
     - local
     - docker
