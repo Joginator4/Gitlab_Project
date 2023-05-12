@@ -71,7 +71,7 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - pip -r requirements.txt
+    - pip install -r requirements.txt
     # - pip install -r requirements.txt
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
@@ -95,8 +95,7 @@ check_caching:
     - linux
   before_script:
     - cd python_app
-    - pip install -U pip
-    - pip --cache-dir=python_app/.cache install -r requirements.txt
+    - pip install -r requirements.txt
   script:
     - python3 --version
 # run_lint_checks:
