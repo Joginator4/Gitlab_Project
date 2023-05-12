@@ -1,3 +1,5 @@
+image: python:3.11.3-alpine3.16
+
 workflow:
   rules:
     - if: $CI_COMMIT_BRANCH != "main" && $CI_PIPELINE_SOURCE != "merge_request_event"
@@ -9,7 +11,7 @@ variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/python
   VERSION: .$CI_PIPELINE_IID
   DEV_URL: google.com
-  PIP_CACHE_DIR: "python_app/.cache"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/python_app/.cache"
 
 stages:
   - cache_build
@@ -18,48 +20,48 @@ stages:
   - test_dependency
   - deploy
 
-creating_cache:
-  stage: cache_build
-  tags:
-    - local
-    - shell
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    paths: 
-      - $PIP_CACHE_DIR
-    policy: push
-  before_script:
-    - cd python_app
-    - pip install -U pip
-    - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
-  script:
-    - echo "12345"
+# creating_cache:
+#   stage: cache_build
+#   tags:
+#     - docker
+#     - local
+#     - linux
+#   cache:
+#     key: "$CI_COMMIT_REF_NAME"
+#     paths: 
+#       - python_app/.cache
+#     policy: push
+#   before_script:
+#     - cd python_app
+#     - pip install -U pip
+#     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
+#   script:
+#     - echo "12345"
 
-test_cache:
-  stage: cache_build
-  needs:
-    - creating_cache
-  tags:
-    - local
-    - shell
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    paths: 
-      - $PIP_CACHE_DIR
-    policy: pull
-  script:
-    - ls -la $PIP_CACHE_DIR
+# test_cache:
+#   stage: cache_build
+#   needs:
+#     - creating_cache
+#   tags:
+#     - local
+#     - shell
+#     - docker
+#   cache:
+#     key: "$CI_COMMIT_REF_NAME"
+#     paths: 
+#       - python_app/.cache
+#   script:
+#     - ls -la $PIP_CACHE_DIR
 
 unit_test_run:
   stage: test
   image: python:3.11.3-alpine3.16
-  needs: 
-    - creating_cache
+  # needs: 
+  #   - creating_cache
   cache:
     key: "$CI_COMMIT_REF_NAME"
     paths:
-      - $PIP_CACHE_DIR
-    policy: pull
+      - python_app/.cache
   tags:
     - local
     - docker
@@ -69,7 +71,9 @@ unit_test_run:
     UNIT_TEST_RESULT: unittest_result.xml
   before_script:
     - cd python_app
-    - pip install -r requirements.txt
+    - pip install -U pip
+    - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
+    # - pip install -r requirements.txt
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
   artifacts:
@@ -77,6 +81,24 @@ unit_test_run:
     reports:
       junit: python_app/$UNIT_TEST_RESULT
 
+check_caching:
+  stage: test
+  needs:
+    - unit_test_run
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    paths:
+      - python_app/.cache
+  tags:
+    - local
+    - docker
+    - linux
+  before_script:
+    - cd python_app
+    - pip install -U pip
+    - pip --cache-dir=python_app/.cache install -r requirements.txt
+  script:
+    - python3 --version
 # run_lint_checks:
 #   stage: test
 #   image: python:3.11.3-alpine3.16
