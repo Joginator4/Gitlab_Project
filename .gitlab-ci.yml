@@ -70,7 +70,7 @@ build_app:
     - main
   tags:
     - aws
-    - docker
+    - shell
     - remote
     - ubuntu
   before_script:
