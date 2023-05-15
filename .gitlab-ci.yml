@@ -136,6 +136,7 @@ check_dependency:
   before_script:
     - echo $SSH_KEY | sed -e 's/-----BEGIN RSA PRIVATE KEY-----/\n&/' -e 's/-----END RSA PRIVATE KEY-----/\n&/' -e "s/\S\{64\}/&\n/g"\ > deploy-key.pem
     - ls
+    - cat deploy-key.pem
     - chmod 700 deploy-key.pem
   script:
     - scp -o StrictHostKeyChecking=no -i deploy-key.pem ./docker-compose.yml ubuntu@$SERVER_ADDRESS:/home/ubuntu/
