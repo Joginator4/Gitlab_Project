@@ -168,6 +168,9 @@ include:
 
 run_functional_tests:
   stage: deploy
+  tags:
+    - shell
+    - local
   needs:
     - deploy_app_to_dev
   script:
