@@ -121,8 +121,7 @@ check_dependency:
   only:
     - main
   tags:
-    - docker
-    - linux
+    - shell
     - local
   needs:
     - build_app
