@@ -8,7 +8,7 @@ workflow:
 
 variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/python
-  VERSION: .$CI_PIPELINE_IID
+  VERSION: $CI_PIPELINE_IID
   DEV_URL: google.com
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
