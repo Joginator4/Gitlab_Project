@@ -173,6 +173,8 @@ run_functional_tests:
 deploy_app_to_staging:
   extends: .deployment
   stage: deploy
+  needs:
+    - run_functional_tests
   variables:
     SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: STAGING_SERVER_ADDRESS
@@ -183,6 +185,8 @@ deploy_app_to_staging:
 deploy_app_to_prod:
   extends: .deployment
   stage: deploy
+  needs:
+    - deploy_app_to_staging
   variables:
     SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $PROD_SERVER_ADDRESS
