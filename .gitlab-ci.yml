@@ -126,7 +126,7 @@ check_dependency:
   needs:
     - build_app
   variables:
-    SSH_PRIVATE_KEY: ""
+    # SSH_PRIVATE_KEY: ""
     SERVER_ADDRESS: ""
     COMPOSE_PROJECT_NAME: ""
     ENDPOINT: ""
@@ -155,7 +155,7 @@ deploy_app_to_dev:
   extends: .deployment
   stage: deploy
   variables:
-    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+#    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $DEV_SERVER_ADDRESS
     COMPOSE_PROJECT_NAME: dev
     ENDPOINT: google.com
@@ -179,7 +179,7 @@ deploy_app_to_staging:
   needs:
     - run_functional_tests
   variables:
-    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+#    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: STAGING_SERVER_ADDRESS
     COMPOSE_PROJECT_NAME: staging
     ENDPOINT: google.com
@@ -191,7 +191,7 @@ deploy_app_to_prod:
   needs:
     - deploy_app_to_staging
   variables:
-    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    # SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $PROD_SERVER_ADDRESS
     COMPOSE_PROJECT_NAME: prod
     ENDPOINT: google.com
