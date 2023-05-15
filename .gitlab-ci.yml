@@ -134,11 +134,8 @@ check_dependency:
     ENDPOINT: ""
     HOSTNAME: ""
   before_script:
-    - echo $SSH_KEY
-    - echo $SSH_KEY | sed -e "s/-----BEGIN RSA PRIVATE KEY-----/&\n/" -e "s/-----END RSA PRIVATE KEY-----/&\n/" -e "s/\S\{64\}/&\n/g"\ > deploy-key.pem
-    - cat deploy-key.pem
     - ls
-    - chmod 700 deploy-key.pem
+    - chmod 700 $SSH_KEY
   script:
     - scp -o StrictHostKeyChecking=no -i $SSH_KEY ./docker-compose.yml ubuntu@$SERVER_ADDRESS:/home/ubuntu/
     - ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@$SERVER_ADDRESS "
@@ -187,6 +184,7 @@ deploy_app_to_staging:
   needs:
     - run_functional_tests
   variables:
+    SSH_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $STAGING_SERVER_ADDRESS
     COMPOSE_PROJ_NAME: stag
     ENDPOINT: google.com
@@ -206,6 +204,7 @@ deploy_app_to_prod:
   needs:
     - performance_tests_for_staging
   variables:
+    SSH_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $PROD_SERVER_ADDRESS
     COMPOSE_PROJ_NAME: prod
     ENDPOINT: google.com
