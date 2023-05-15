@@ -184,7 +184,7 @@ deploy_app_to_staging:
   variables:
 #    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $STAGING_SERVER_ADDRESS
-    COMPOSE_PROJECT_NAME: staging
+    COMPOSE_PROJECT_NAME: stag
     ENDPOINT: google.com
     HOSTNAME: staging
 
