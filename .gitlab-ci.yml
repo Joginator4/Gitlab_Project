@@ -16,7 +16,9 @@ stages:
   - test
   - build
   - test_dependency
-  - deploy
+  - deploy_dev
+  - deploy_staging
+  - deploy_prod
 
 unit_test_run:
   stage: test
@@ -126,21 +128,22 @@ check_dependency:
   needs:
     - build_app
   variables:
-    # SSH_PRIVATE_KEY: ""
+    SSH_KEY: ""
     SERVER_ADDRESS: ""
-    COMPOSE_PROJECT_NAME: ""
+    COMPOSE_PROJ_NAME: ""
     ENDPOINT: ""
     HOSTNAME: ""
   before_script:
+    - echo $SSH_KEY | sed -e 's/-----BEGIN RSA PRIVATE KEY-----/\n&/' -e 's/-----END RSA PRIVATE KEY-----/\n&/' -e "s/\S\{64\}/&\n/g"\ > deploy-key.pem
     - ls
-    - chmod 700 $SSH_PRIVATE_KEY
+    - chmod 700 deploy-key.pem
   script:
-    - scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ./docker-compose.yml ubuntu@$SERVER_ADDRESS:/home/ubuntu/
-    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@$SERVER_ADDRESS "
+    - scp -o StrictHostKeyChecking=no -i deploy-key.pem ./docker-compose.yml ubuntu@$SERVER_ADDRESS:/home/ubuntu/
+    - ssh -o StrictHostKeyChecking=no -i deploy-key.pem ubuntu@$SERVER_ADDRESS "
         ls &&
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
         
-        export COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME &&
+        export COMPOSE_PROJECT_NAME=$COMPOSE_PROJ_NAME &&
         export DC_IMAGE_NAME=$IMAGE_NAME &&
         export DC_IMAGE_TAG=$VERSION &&
         
@@ -153,9 +156,9 @@ check_dependency:
 
 deploy_app_to_dev:
   extends: .deployment
-  stage: deploy
+  stage: deploy_dev
   variables:
-#    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SSH_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $DEV_SERVER_ADDRESS
     COMPOSE_PROJECT_NAME: dev
     ENDPOINT: google.com
@@ -167,7 +170,7 @@ include:
   
 
 run_functional_tests:
-  stage: deploy
+  stage: deploy_dev
   tags:
     - shell
     - local
@@ -178,24 +181,33 @@ run_functional_tests:
 
 deploy_app_to_staging:
   extends: .deployment
-  stage: deploy
+  stage: deploy_staging
   needs:
     - run_functional_tests
   variables:
-#    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SSH_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $STAGING_SERVER_ADDRESS
-    COMPOSE_PROJECT_NAME: stag
+    COMPOSE_PROJ_NAME: stag
     ENDPOINT: google.com
     HOSTNAME: staging
 
-deploy_app_to_prod:
-  extends: .deployment
-  stage: deploy
+performance_tests_for_staging:
+  stage: deploy_staging
   needs:
     - deploy_app_to_staging
+  script:
+    - echo "Running performance tests"
+
+
+deploy_app_to_prod:
+  extends: .deployment
+  stage: deploy_prod
+  needs:
+    - performance_tests_for_staging
   variables:
-    # SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SSH_KEY: $SSH_PRIVATE_KEY
     SERVER_ADDRESS: $PROD_SERVER_ADDRESS
-    COMPOSE_PROJECT_NAME: prod
+    COMPOSE_PROJ_NAME: prod
     ENDPOINT: google.com
     HOSTNAME: prod
+  when: manual
