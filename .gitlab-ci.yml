@@ -7,57 +7,20 @@ workflow:
     - when: always
 
 variables:
-  #IMAGE_NAME: python
   IMAGE_NAME: $CI_REGISTRY_IMAGE/python
   VERSION: .$CI_PIPELINE_IID
   DEV_URL: google.com
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 stages:
-  - cache_build
   - test
   - build
   - test_dependency
   - deploy
 
-# creating_cache:
-#   stage: cache_build
-#   tags:
-#     - docker
-#     - local
-#     - linux
-#   cache:
-#     key: "$CI_COMMIT_REF_NAME"
-#     paths: 
-#       - python_app/.cache
-#     policy: push
-#   before_script:
-#     - cd python_app
-#     - pip install -U pip
-#     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements.txt
-#   script:
-#     - echo "12345"
-
-# test_cache:
-#   stage: cache_build
-#   needs:
-#     - creating_cache
-#   tags:
-#     - local
-#     - shell
-#     - docker
-#   cache:
-#     key: "$CI_COMMIT_REF_NAME"
-#     paths: 
-#       - python_app/.cache
-#   script:
-#     - ls -la $PIP_CACHE_DIR
-
 unit_test_run:
   stage: test
   image: python:3.11.3-alpine3.16
-  # needs: 
-  #   - creating_cache
   cache:
     key: "$CI_COMMIT_REF_NAME"
     paths:
@@ -72,7 +35,6 @@ unit_test_run:
   before_script:
     - cd python_app
     - pip install -r requirements.txt
-    # - pip install -r requirements.txt
   script:
     - python3 $UNIT_TEST > $UNIT_TEST_RESULT 2>&1
   artifacts:
@@ -101,27 +63,16 @@ check_caching:
 
 sast:
   stage: test
-# run_lint_checks:
-#   stage: test
-#   image: python:3.11.3-alpine3.16
-#   cache:
-#     key: "$CI_COMMIT_REF_NAME"
-#     paths:
-#       - app/requirements.txt
-#   tags:
-#     - local
-#     - docker
-#     - linux
   
 build_app:
   stage: build
   only:
     - main
   tags:
-    - local
-    - shell
- # variables:
-    #REPO: registry.gitlab.com/kacperblaz/kubernetes_training .
+    - aws
+    - docker
+    - remote
+    - ubuntu
   before_script:
     - export PACKAGE_VERSION=$(cat version.json | jq -r .version)
     - export VERSION=$PACKAGE_VERSION.$CI_PIPELINE_IID
@@ -130,7 +81,6 @@ build_app:
     - cd python_app
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-#    - docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - docker build -t $IMAGE_NAME:$VERSION .
     - docker push $IMAGE_NAME:$VERSION
   artifacts:
@@ -150,7 +100,7 @@ versioning_builded_image:
     - ls
     - env
   script:
-    - echo "I have version.txt file inside this stage"
+    - echo "Making sure artifact and dotenv features are up and running"
 
 check_dependency:
   only:
@@ -166,34 +116,76 @@ check_dependency:
   script:
     - echo "I have no env variables bcs of dependencies"
 
-deploy_app:
+
+.deployment:
   only:
     - main
-  stage: deploy
   tags:
-    - local
-    - shell
+    - aws
+    - docker
+    - remote
+    - ubuntu
   needs:
     - build_app
-  before_script:
-    - echo "Logging to dev-server on aws and deploying python app from CR"
-    - ls
-    - chmod 700 $SSH_DEV_KEY
-    - env
+  variables:
+    SSH_PRIVATE_KEY: ""
+    SERVER_ADDRESS: ""
+    COMPOSE_PROJECT_NAME: ""
+    ENDPOINT: ""
+    HOSTNAME: ""
   script:
-    - scp -o StrictHostKeyChecking=no -i $SSH_DEV_KEY docker-compose.yml ubuntu@$IP_ADDRESS:/home/ubuntu/
-    - ssh -o StrictHostKeyChecking=no -i $SSH_DEV_KEY ubuntu@$IP_ADDRESS "
+    - scp -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY docker-compose.yml ubuntu@$SERVER_ADDRESS:/home/ubuntu/
+    - ssh -o StrictHostKeyChecking=no -i $SSH_PRIVATE_KEY ubuntu@$SERVER_ADDRESS "
         ls &&
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
+        export COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME &&
         export DC_IMAGE_NAME=$IMAGE_NAME &&
         export DC_IMAGE_TAG=$VERSION &&
         docker-compose down &&
         docker-compose up -d &&
         docker ps"
   environment:
-    name: google_platform
-    url: $DEV_URL
+    name: $HOSTNAME
+    url: $URL
+
+deploy_app_to_dev:
+  extends: .deployment
+  stage: deploy
+  variables:
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SERVER_ADDRESS: $DEV_SERVER_ADDRESS
+    COMPOSE_PROJECT_NAME: dev
+    ENDPOINT: google.com
+    HOSTNAME: dev
+
 
 include:
   - template: Jobs/SAST.gitlab-ci.yml 
   
+
+run_functional_tests:
+  stage: deploy
+  needs:
+    - deploy_app_to_dev
+  script:
+    - "Running functional tests ..."
+
+deploy_app_to_staging:
+  extends: .deployment
+  stage: deploy
+  variables:
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SERVER_ADDRESS: STAGING_SERVER_ADDRESS
+    COMPOSE_PROJECT_NAME: staging
+    ENDPOINT: google.com
+    HOSTNAME: staging
+
+deploy_app_to_prod:
+  extends: .deployment
+  stage: deploy
+  variables:
+    SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+    SERVER_ADDRESS: $PROD_SERVER_ADDRESS
+    COMPOSE_PROJECT_NAME: prod
+    ENDPOINT: google.com
+    HOSTNAME: prod
